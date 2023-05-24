@@ -9,17 +9,15 @@ const schema = new mongoose.Schema({
             {
                 producto: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: "productos"
+                    ref: "Products"
                 },
                 qty: Number
             }
         ],
         default: []
     }
-
 })
 
 const cartModel = mongoose.model(collection, schema);
 
-export default cartModel;
-
+export default cartModel; 

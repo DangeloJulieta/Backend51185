@@ -113,13 +113,23 @@ export default class ProductManager {
             message: result
         })
     }
-
-    getProducts = async (limit, page) => {
-        const products = await productModel.paginate({}, { limit, page, lean: true })
+    getProducts = async (limit, page, sortValue) => {
+        const products = await productModel.paginate({}, { limit, page, sort: { price: sortValue }, lean: true })
+        const nextLink = products.hasNextPage ? `/api/products/?limit=${limit}&page=${products.nextPage}&sort=${sortValue}` : null
+        const prevLink = products.hasPrevPage ? `/api/products/?limit=${limit}&page=${products.prevPage}&sort=${sortValue}` : null
         return ({
             code: 200,
-            status: 'Success',
-            message: products
+            message: {
+                status: 'success',
+                payload: products.docs,
+                totalpages: products.totalPages,
+                prevPage: products.prevPage,
+                nextPage: products.nextPage,
+                hasPrevPage: products.hasPrevPage,
+                hasNextPage: products.hasNextPage,
+                nextLink,
+                prevLink
+            }
         })
     }
 
@@ -154,7 +164,7 @@ export default class ProductManager {
             stock: stock,
             category: category
         }
-        console.log("desde addProduct en manager mongo", producto)
+        //console.log("desde addProduct en manager mongo", producto)
 
 
         if (!title || !description || !price || !code || !stock || !category) {
@@ -203,7 +213,7 @@ export default class ProductManager {
             return ({
                 code: 400,
                 status: 'Error',
-                message: 'No existe un producto con ese ID'
+                message: 'Producto no encontrado'
             })
         }
     }

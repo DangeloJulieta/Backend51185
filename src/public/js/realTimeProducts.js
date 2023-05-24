@@ -1,7 +1,7 @@
 const socket = io()
 
 let title = document.getElementById("nombre")
-let description = document.getElementById("descripcion")
+let description = document.getElementById("descripcion") 
 let price = document.getElementById("precio")
 let id = document.getElementById("id")
 let category = document.getElementById("categoria")
@@ -24,13 +24,11 @@ btnadd.addEventListener("click", async (e) => {
         category: category.value
     }
 
-    console.log("product desde el EventListener", product)
-
-    if (!title.value || !description.value || !price.value || !code.value || !stock.value || !category.value) {
+    if(!title.value || !description.value || !price.value || !code.value || !stock.value || !category.value){
         return alert("por favor coloca todos los datos");
     }
 
-    try {
+    try{
         const response = await fetch("/realtimeproducts", {
             method: "POST",
             headers: { "Content-type": "application/json" },
@@ -38,10 +36,8 @@ btnadd.addEventListener("click", async (e) => {
         })
 
         const postProductResponse = response.json()
-
-        //console.log(postProductResponse)
-
-        if (!postProductResponse) return alert(postProductResponse.response)
+        
+        if(!postProductResponse) return alert(postProductResponse.response)
 
         title.value = ""
         description.value = ""
@@ -49,8 +45,11 @@ btnadd.addEventListener("click", async (e) => {
         price.value = ""
         code.value = ""
         stock.value = ""
+        
+        alert("Producto agregado con éxito")
+        window.location.reload("realtimeproducts.html")
 
-    } catch (error) {
+    }catch(error){
         console.error(error)
     }
 
@@ -61,29 +60,30 @@ btndelete.addEventListener("click", async (event) => {
 
     const deleteId = id.value
 
-    if (!deleteId) return alert("coloca el Id por favor")
+    if(!deleteId) return alert("coloca el Id por favor")
 
-    try {
+    try{
         const response = await fetch(`/realtimeproducts/${deleteId}`, {
             method: "DELETE"
         })
         const product = await response.json()
-
-
-        if (!product) return alert(product)
-
+        
+        if(!product) return alert(product)
+        
         id.value = ""
-
-        alert("Product deleted.")
-    } catch (error) {
+        
+        alert("Producto borrado con éxito")
+        window.location.reload("realtimeproducts.html")
+        
+    }catch(error){
         console.error(error)
     }
 })
 
 const createHtml = (data) => {
     return data.length
-        ? data.map(product => {
-            products.innerHTML += `
+    ? data.map(product => {
+        products.innerHTML += `
         <h3 ><span>Nombre: </span>${product.title}</h3>
         <h5 ><span>ID: </span>${product.id}</h5>
         <h5 ><span>Descripcion: </span>${product.description}</h5>
@@ -92,9 +92,9 @@ const createHtml = (data) => {
         <h5 ><span>Stock: </span>${product.stock}</h5>
         <h5 ><span>Codigo: </span>${product.code}</h5>
         <h5 ><span>Categoria: </span>${product.category}</h5>
-        `
-        })
-        : products.innerHTML += `
+        `            
+    })
+    : products.innerHTML += `
         <h3 ><span>Nombre: </span>${data.title}</h3>
         <h5 ><span>ID: </span>${data.id}</h5>
         <h5 ><span>Descripcion: </span>${data.description}</h5>
@@ -103,13 +103,12 @@ const createHtml = (data) => {
         <h5 ><span>Stock: </span>${data.stock}</h5>
         <h5 ><span>Codigo: </span>${data.code}</h5>
         <h5 ><span>Categoria: </span>${data.category}</h5>
-        `
+        `       
 }
 
-socket.on("newproduct", data => {
+socket.on("newproduct", data =>{
     products.innerHTML = ""
     createHtml(data);
-    //window.location.reload();
 })
 
 socket.on("productdelete", data => {
