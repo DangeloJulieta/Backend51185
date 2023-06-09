@@ -3,8 +3,10 @@ import local from 'passport-local';
 import userService from '../dao/models/User.model.js';
 import { createHash, validatePassword } from '../utils.js';
 import GitHubStrategy from 'passport-github2';
+import CartManager from "../dao/managers/cartManagerMongo.js";
 
 const LocalStrategy = local.Strategy;
+const cartManager = new CartManager()
 
 const initializePassport = () => {
     passport.use('register', new LocalStrategy(
@@ -13,6 +15,8 @@ const initializePassport = () => {
             let { first_name, last_name, email, rol, age } = req.body;
             try {
                 const user = await userService.findOne({ email: username });
+                const cart = await cartManager.createCart();
+                console.log(cart); 
                 if (user) {
                     console.log('El usuario existe');
                     return done(null, false);
@@ -28,8 +32,12 @@ const initializePassport = () => {
                     email,
                     rol,
                     age,
-                    password: createHash(password)
+                    password: createHash(password),
+                    cart: cart.message._id
                 }
+                console.log(newUser);
+
+                
 
                 const result = await userService.create(newUser);
                 return done(null, result);
@@ -66,24 +74,21 @@ const initializePassport = () => {
     }))
 
     passport.use('github', new GitHubStrategy({
-        clientID: 'Iv1.2c464452d85447cd',
-        clientSecret: '5ade14c36c79387e3e1e225e05bf2a55f4bf5e49',
+        clientID: 'Iv1.4fcbc0ae797df8bd',
+        clientSecret: '412ef9eb177d4f7a1ab7dc1ccdff53b06331d03f',
         callbackURL: 'http://localhost:8080/api/session/githubcallback'
 
     }, async (accesToken, refreshToken, profile, done) => {
         try {
-
             console.log(profile); //vemos toda la info que viene del profile
-            let user = await userService.findOne({ email: profile._json.email })
+            const email = profile.emails[0].value;
+            let user = await userService.findOne({ email })
             if (!user) {
-
-                const email = profile._json.email == null ? profile._json.username : null;
-
                 const newUser = {
-                    first_name: profile._json.name,
-                    last_name: '',
+                    first_name: profile.displayName,
+                    last_name: " ",
                     name: profile._json.name,
-                    email: email,
+                    email,
                     age: 18,
                     password: '',
                     rol: profile._json.type
@@ -99,6 +104,7 @@ const initializePassport = () => {
             return done(null, error)
         }
     }))
+
 }
 
 export default initializePassport;
